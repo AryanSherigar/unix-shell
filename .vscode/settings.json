@@ -1,0 +1,13 @@
+{
+    "editor.minimap.enabled": false,
+    "editor.renderWhitespace": "none",
+    "editor.cursorBlinking": "solid",
+    "editor.smoothScrolling": false,
+    "editor.bracketPairColorization.enabled": false,
+    "editor.guides.bracketPairs": false,
+    "workbench.list.smoothScrolling": false,
+    "workbench.tree.indent": 12,
+    "workbench.startupEditor": "none",
+    "terminal.integrated.smoothScrolling": false,
+    "terminal.integrated.gpuAcceleration": "off"
+}
