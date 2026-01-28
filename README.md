@@ -126,6 +126,7 @@ The following enhancements are planned to reach a fully production-grade shell:
 ##  Author
 
 **Aryan Keshav Sherigar**
+Build during Codecrafters Unix Shell Challenge.
 
 ---
 
