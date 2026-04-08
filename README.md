@@ -1,135 +1,89 @@
-#  Unix-Like Shell in C++
+# C-shell
 
-A modular, Unix-inspired command-line shell built from scratch in **C++** using **POSIX system calls**. This project focuses on core operating system concepts such as process creation, pipes, file descriptor management, and command parsing, while also delivering a polished interactive user experience with history and tab completion.
+`C-shell` is a robust, Unix-inspired command-line interpreter built entirely from scratch in C++. It leverages core POSIX system calls to deliver a fully functional, interactive terminal experience complete with process pipelining, I/O redirection, and persistent history.
 
----
+## Motivation
 
-##  Features
+For a long time, using the terminal felt like pure magic to me. I would type a command, press enter, and things just happened seamlessly. I built `C-shell` because I wanted to pull back the curtain and demystify that process. I wanted to understand exactly how Linux creates processes, manages file descriptors, and actually executes commands under the hood. What started as an effort to decode that "black magic" turned into a fully capable tool that handles complex process orchestration and system-level interactions.
 
-### Core Shell Functionality
+## Quick Start
 
-* Interactive shell loop with custom prompt
-* Command parsing with support for arguments and pipelines (`|`)
-* Execution of external programs using `fork()`, `execvp()`, and `waitpid()`
-* Input and output redirection (`<`, `>`)
-* Built-in commands executed in the parent shell process
+### 1. Install Dependencies
+You'll need a C++ compiler and the GNU Readline library.
+
+**Ubuntu / Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install g++ libreadline-dev
+```
+
+**macOS:**
+```bash
+brew install readline
+```
+
+### 2. Build and Run
+```bash
+# Clone the repository
+git clone [https://github.com/aryansherigar/unix-shell.git](https://github.com/aryansherigar/unix-shell.git)
+cd unix-shell
+
+# Compile the source code
+g++ -std=c++17 src/*.cpp -Iinclude -lreadline -o c-shell
+
+# Start the shell
+./c-shell
+```
+
+## 📖 Usage & Capabilities
+
+`C-shell` doesn't just parse text; it manages full process lifecycles using `fork()`, `execv()`, `waitpid()`, and `pipe()`. 
+
+### Core Execution & Pipelining
+Run standard Linux executables and chain them together. The shell automatically handles the inter-process communication (IPC) required to route data between programs.
+```bash
+$ ls -la | grep ".cpp" | wc -l
+```
+
+### Advanced I/O Redirection
+Control standard output and standard error streams natively, just like a standard Unix shell.
+```bash
+# Overwrite output
+$ echo "Hello" > output.txt
+
+# Append output
+$ echo "World" >> output.txt
+
+# Redirect standard error
+$ cat non_existent_file 2> error_log.txt
+
+# Append standard error
+$ ./failing_script 2>> error_log.txt
+```
 
 ### Built-in Commands
+Commands that modify the state of the shell itself must be executed in the parent process. `C-shell` includes native implementations for:
+* `cd <path>` / `cd ~` : Navigate the file system.
+* `pwd` : Print the current working directory.
+* `echo [-n] <text>` : Print text to the terminal.
+* `type <command>` : Identify if a command is a built-in or an external executable.
+* `history [-c|-r|-w|-a]` : View and manage your command history.
+* `exit <code>` : Gracefully terminate the shell.
 
-* `cd` – change working directory
-* `exit` – exit the shell
-* Additional helper commands (e.g., `pwd`, `help` if implemented)
+### Interactive Enhancements
+* **Command History:** Powered by GNU Readline. Use the Up/Down arrows to navigate previous commands. History is saved persistently across sessions.
+* **Tab Completion:** Hit `TAB` to auto-complete built-in commands, external executables found in your `$PATH`, or files in your current directory.
+* **Quote Handling:** Intelligently parses both single (`'`) and double (`"`) quotes, including escape characters (`\`).
 
-### User Experience Enhancements
+## Project Architecture
 
-* Command history using GNU Readline
-* Persistent history across sessions
-* Tab completion for commands
-* Graceful error messages for invalid commands
+The codebase is engineered with a strict separation of concerns, making the shell highly modular and easy to extend:
 
----
-
-##  Project Architecture
-
-The shell is designed with **clear separation of concerns**, closely mirroring how real Unix shells are structured.
-
-```
-.
-├── src/
-│   ├── main.cpp          # Shell entry point and main loop
-│   ├── parser.cpp        # Tokenization and command parsing
-│   ├── executor.cpp     # Process creation, pipes, and execution
-│   ├── redirection.cpp  # File descriptor and I/O redirection logic
-│   ├── builtins.cpp     # Built-in shell commands
-│   ├── history.cpp      # Command history handling
-│   ├── completion.cpp  # Tab completion logic
-│   └── utils.cpp        # Shared helper utilities
-│
-├── include/              # Header files for all modules
-│   ├── parser.hpp
-│   ├── executor.hpp
-│   ├── redirection.hpp
-│   ├── builtins.hpp
-│   ├── history.hpp
-│   ├── completion.hpp
-│   └── utils.hpp
-│
-└── README.md
-```
-
-**Design principle:** parsing, execution, redirection, and UX are completely decoupled, making the codebase easy to extend and reason about.
+* **Parser (`parser.cpp`)**: Tokenizes raw input strings, manages quote states, and splits commands into distinct pipeline execution blocks.
+* **Executor (`executor.cpp`)**: The heart of the shell. Manages process forking, sets up file descriptors for pipes, and triggers the `execv` calls.
+* **Redirection (`redirection.cpp`)**: Uses an RAII pattern (`RedirectGuard`) to safely duplicate (`dup2`), manipulate, and restore file descriptors.
+* **Builtins (`builtins.cpp`)**: Logic for all native commands.
+* **UX Modules (`completion.cpp`, `history.cpp`)**: Interfaces with the external Readline library for a polished interactive experience.
 
 ---
-
-## ⚙️ Technologies & Concepts Used
-
-* **Language:** C++
-* **System APIs:** POSIX (`fork`, `execvp`, `pipe`, `dup2`, `waitpid`, `open`)
-* **Libraries:** GNU Readline
-* **Core OS Concepts:**
-
-  * Process creation and lifecycle
-  * Inter-process communication (pipes)
-  * File descriptor manipulation
-  * Parent vs child process behavior
-
----
-
-##  Building & Running
-
-### Prerequisites
-
-* Linux / Unix-based OS
-* `g++` compiler
-* GNU Readline development library
-
-### Build
-
-```bash
-g++ -std=c++17 src/*.cpp -Iinclude -lreadline -o unix-shell
-```
-
-### Run
-
-```bash
-./unix-shell
-```
-
----
-
-##  Example Usage
-
-```bash
-$ ls | grep cpp > files.txt
-$ cat < files.txt
-$ cd /usr/bin
-$ echo "Hello World"
-```
-
----
-
-##  Future Improvements
-
-The following enhancements are planned to reach a fully production-grade shell:
-
-* Signal handling (`Ctrl+C`, `Ctrl+Z`) with proper foreground process control
-* Background job execution using `&`
-* Job control (`jobs`, `fg`, `bg`)
-* Append redirection (`>>`) and error redirection (`2>`)
-* More robust handling of quoted and escaped strings
-* Implement a separate UI for the shell
-
----
-
-
-
-##  Author
-
-**Aryan Keshav Sherigar**
-Build during Codecrafters Unix Shell Challenge.
-
----
-
-##  License
-
-This project is open-source and available for learning and experimentation.
+*Built by Aryan Keshav Sherigar*
